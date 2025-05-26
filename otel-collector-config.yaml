@@ -1,0 +1,74 @@
+exporters:
+  otlp:
+    endpoint: https://gateway.otlp.hasura.io:443
+    headers:
+      Authorization: pat ${env:HASURA_DDN_PAT}
+  prometheus:
+    endpoint: "0.0.0.0:9091"
+    send_timestamps: true
+    metric_expiration: 180m
+    enable_open_metrics: true
+    add_metric_suffixes: false
+    resource_to_telemetry_conversion:
+      enabled: true
+connectors:
+  spanmetrics:
+    histogram:
+      explicit:
+        buckets: [100us, 1ms, 2ms, 6ms, 10ms, 100ms, 250ms]
+    dimensions:
+      - name: operation_name
+      - name: request.graphql_query
+      - name: session.role
+      - name: graphql.operation_type
+    exemplars:
+      enabled: true
+    exclude_dimensions: ['span.kind']
+    dimensions_cache_size: 1000
+    aggregation_temporality: "AGGREGATION_TEMPORALITY_CUMULATIVE"
+    metrics_flush_interval: 15s
+    metrics_expiration: 5m
+    events:
+      enabled: true
+      dimensions:
+        - name: exception.type
+        - name: exception.message
+    resource_metrics_key_attributes:
+      - service.name
+      - telemetry.sdk.language
+      - telemetry.sdk.name
+
+processors:
+  batch: {}
+  transform:
+    trace_statements:
+      - context: span
+        statements:
+          - set(attributes["graphql.operation_type"], "query") where IsMatch(attributes["request.graphql_query"], "^\\s*query\\s+.*")
+          - set(attributes["graphql.operation_type"], "mutation") where IsMatch(attributes["request.graphql_query"], "^\\s*mutation\\s+.*")
+          - set(attributes["graphql.operation_type"], "subscription") where IsMatch(attributes["request.graphql_query"], "^\\s*subscription\\s+.*")
+          - set(attributes["graphql.operation_type"], "query") where IsMatch(attributes["request.graphql_query"], "^\\s*\\{.*")
+  
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [transform]
+      exporters: [spanmetrics]
+    metrics:
+      receivers: [spanmetrics]
+      exporters: [prometheus]
+    # traces:
+    #   exporters:
+    #     - otlp
+    #   processors:
+    #     - batch
+    #   receivers:
+    #     - otlp
