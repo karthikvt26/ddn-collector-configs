@@ -1,0 +1,6 @@
+apm-server:
+  host: "localhost:8200"
+output.elasticsearch:
+  hosts: ["localhost:9200"]
+  username: "elastic"
+  password: "changeme"

@@ -1,0 +1,269 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cen50eukeglq8f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 19,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cen50eukeglq8f"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(rate(calls{service_name=~\"$service\", span_name=~\"$span\", status_code=~\"$status_code\"}[1m])) by (${group_by:raw})",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "grouped"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cen50eukeglq8f"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(calls{service_name=~\"$service\", span_name=~\"$span\", status_code=~\"$status_code\"}[1m]))",
+          "hide": true,
+          "instant": false,
+          "legendFormat": "",
+          "range": true,
+          "refId": "ungrouped"
+        }
+      ],
+      "title": "Requests",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "app_neon",
+            "ddn-engine"
+          ],
+          "value": [
+            "app_neon",
+            "ddn-engine"
+          ]
+        },
+        "definition": "label_values(calls,service_name)",
+        "label": "service",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(calls,service_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allValue": "",
+        "allowCustomValue": false,
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        },
+        "definition": "label_values(calls{service_name=~\"$service\"},span_name)",
+        "includeAll": true,
+        "label": "span",
+        "multi": true,
+        "name": "span",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(calls{service_name=~\"$service\"},span_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "span_name",
+            "service_name",
+            "status_code",
+            "operation_name"
+          ],
+          "value": [
+            "span_name",
+            "service_name",
+            "status_code",
+            "operation_name"
+          ]
+        },
+        "definition": "label_names(.+)",
+        "label": "group_by",
+        "multi": true,
+        "name": "group_by",
+        "options": [],
+        "query": {
+          "qryType": 0,
+          "query": "label_names(.+)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "STATUS_CODE_ERROR",
+            "STATUS_CODE_UNSET"
+          ],
+          "value": [
+            "STATUS_CODE_ERROR",
+            "STATUS_CODE_UNSET"
+          ]
+        },
+        "definition": "label_values(calls,status_code)",
+        "description": "",
+        "label": "status",
+        "multi": true,
+        "name": "status_code",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(calls,status_code)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Request metrics by service name, span name",
+  "uid": "a79430d8-4eae-4e0f-8d7b-a72d4ede1bfe",
+  "version": 23
+}

@@ -1,4 +1,11 @@
 exporters:
+  otlp/apm:
+    endpoint: elastic-apm-server:8200
+    compression: none
+    tls:
+      insecure: true
+    # headers:
+    #   Authorization: pat ${env:HASURA_DDN_PAT}
   otlp:
     endpoint: https://gateway.otlp.hasura.io:443
     headers:
@@ -21,6 +28,7 @@ connectors:
       - name: request.graphql_query
       - name: session.role
       - name: graphql.operation_type
+      - name: internal.error_description
     exemplars:
       enabled: true
     exclude_dimensions: ['span.kind']
@@ -62,10 +70,14 @@ service:
       receivers: [otlp]
       processors: [transform]
       exporters: [spanmetrics]
+    traces/apm:
+      receivers: [otlp]
+      processors: [transform]
+      exporters: [otlp/apm]
     metrics:
       receivers: [spanmetrics]
-      exporters: [prometheus]
-    # traces:
+      exporters: [prometheus, otlp/apm]
+    # traces/gateway:
     #   exporters:
     #     - otlp
     #   processors:

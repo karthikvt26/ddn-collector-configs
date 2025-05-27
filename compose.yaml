@@ -40,3 +40,63 @@ services:
       - local.hasura.dev:host-gateway
     labels:
       io.hasura.ddn.service-name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --enable-feature=exemplar-storage
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana-config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana-config/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    extra_hosts:
+      - local.hasura.dev:host-gateway
+    labels:
+      io.hasura.ddn.service-name: grafana
+      
+  elastic-apm-server:
+    image: docker.elastic.co/apm/apm-server:9.0.1
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./elastic/apm-server.docker.yml:/usr/share/apm-server/apm-server.yml
+    extra_hosts:
+      - local.hasura.dev:host-gateway
+    labels:
+      io.hasura.ddn.service-name: elastic-apm
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager"
+      - xpack.security.enabled=false
+      - "http.host=0.0.0.0"
+      - "network.host=0.0.0.0"
+      - "transport.host=0.0.0.0"
+      - "http.cors.enabled=true"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    extra_hosts:
+      - local.hasura.dev:host-gateway
+    labels:
+      io.hasura.ddn.service-name: elasticsearch
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.0.0
+    ports:
+      - "5601:5601"
+    # volumes:
+    #   - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+volumes:
+  grafana-storage:
+  elasticsearch-data:
